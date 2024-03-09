@@ -1,45 +1,65 @@
 import { FC, useState, useEffect } from 'react';
 
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useDebounce } from 'usehooks-ts';
 
 import axiosClient from '@/apis/axios-client';
-import Table from '@/components/table';
+import EnhancedTable from '@/components/table';
 import { CharacterType, IPagination, InputChangeEvent } from '@/interfaces';
 
 const CharacterList: FC = () => {
   const [search, setSearch] = useState<string>('');
   const debouncedSearch = useDebounce(search, 500);
-  const [pageSize, setPageSize] = useState<number>(10);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [totalPage, setTotalPage] = useState<number>(0);
 
   const [characters, setCharacters] = useState<CharacterType[]>([]);
 
   useEffect(() => {
     axiosClient
-      .get('/character', {
+      .get('/character/', {
         params: {
-          page: currentPage,
-          limit: pageSize,
           name: debouncedSearch,
         },
       })
       .then((response: IPagination<CharacterType>) => {
         const {
-          info: { pages },
-          results,
+          info: { count },
         } = response;
-        setCharacters(results);
-        setCurrentPage(0);
-        setTotalPage(pages);
+        const promises: Promise<any>[] = [];
+        for (let i = 1; i <= Math.ceil(count / 20); i++) {
+          promises.push(
+            new Promise(
+              (
+                resolve: (value: CharacterType[]) => void,
+                reject: (value: Error) => void,
+              ) => {
+                axiosClient
+                  .get('/character', {
+                    params: {
+                      name: debouncedSearch,
+                      page: i,
+                    },
+                  })
+                  .then((response: IPagination<CharacterType>) => {
+                    const { results } = response;
+                    resolve(results);
+                  })
+                  .catch((err: Error) => {
+                    reject(err);
+                  });
+              },
+            ),
+          );
+        }
+        Promise.all(promises)
+          .then((values: any[]) => {
+            const resJson = values.flatMap((value) => value as CharacterType[]);
+            console.log(resJson);
+            setCharacters(resJson);
+          })
+          .catch(() => {});
       })
       .catch(() => {});
-  }, [debouncedSearch, currentPage, pageSize]);
+  }, [debouncedSearch]);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -52,26 +72,8 @@ const CharacterList: FC = () => {
           onChange={(e: InputChangeEvent) => setSearch(e.target.value)}
           sx={{ flexShrink: 0 }}
         />
-        <FormControl sx={{ flexShrink: 0 }}>
-          <InputLabel id="id-limit-select-label">Rows Per Page</InputLabel>
-          <Select
-            id="id-limit-select"
-            labelId="id-limit-select-label"
-            label="Rows Per Page"
-            value={pageSize.toString()}
-            onChange={(e: SelectChangeEvent) =>
-              setPageSize(Number(e.target.value))
-            }
-          >
-            {[10, 20, 50].map((size: number) => (
-              <MenuItem key={size} value={size}>
-                {size}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       </div>
-      <Table tableRows={characters} />
+      <EnhancedTable tableRows={characters} />
     </div>
   );
 };
