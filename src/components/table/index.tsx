@@ -9,6 +9,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import { useNavigate } from 'react-router-dom';
 
 import EnhancedTableHead from './Head';
 import { Data } from './Head';
@@ -58,9 +59,10 @@ interface IEnhancedTableProps {
 }
 
 export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
+  const navigate = useNavigate();
+
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('name');
-  const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
 
@@ -74,22 +76,7 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
   };
 
   const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-    setSelected(newSelected);
+    navigate(`/character/${id}`);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -130,11 +117,11 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
               {visibleRows.map((row) => {
                 return (
                   <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    tabIndex={-1}
                     key={row.id}
+                    tabIndex={-1}
+                    onClick={(event) => handleClick(event, row.id)}
                     sx={{ cursor: 'pointer' }}
+                    hover
                   >
                     <TableCell scope="row">
                       <Avatar alt={row.name} src={row.image} />

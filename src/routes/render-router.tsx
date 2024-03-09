@@ -1,15 +1,22 @@
 import { FC, lazy } from 'react';
 
-import { useRoutes } from 'react-router-dom';
+import { Navigate, useRoutes } from 'react-router-dom';
 
 const Layout = lazy(() => import('../layout'));
 const CharacterList = lazy(() => import('../pages/characters/CharacterList'));
+const CharacterDetail = lazy(
+  () => import('../pages/characters/CharacterDetail'),
+);
 
 const routes = [
   {
     path: '',
     element: <Layout />,
-    children: [{ path: '', element: <CharacterList /> }],
+    children: [
+      { index: true, element: <Navigate to="character" /> },
+      { path: 'character', element: <CharacterList /> },
+      { path: 'character/:id', element: <CharacterDetail /> },
+    ],
   },
 ];
 

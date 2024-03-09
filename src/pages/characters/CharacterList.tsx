@@ -53,7 +53,6 @@ const CharacterList: FC = () => {
         Promise.all(promises)
           .then((values: any[]) => {
             const resJson = values.flatMap((value) => value as CharacterType[]);
-            console.log(resJson);
             setCharacters(resJson);
           })
           .catch(() => {});
