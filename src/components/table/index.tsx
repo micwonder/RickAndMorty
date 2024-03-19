@@ -64,7 +64,20 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('name');
   const [page, setPage] = React.useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(
+    parseInt(
+      localStorage.getItem('rowsPerPage') === null
+        ? '5'
+        : localStorage.getItem('rowsPerPage'),
+      10,
+    ),
+  );
+
+  // React.useEffect(() => {
+  //   if (localStorage.getItem('rowPerPage') === null) {
+  //     localStorage.setItem('rowPerPage', '5');
+  //   }
+  // }, []);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -87,6 +100,7 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
+    localStorage.setItem('rowsPerPage', event.target.value);
     setPage(0);
   };
 
@@ -124,7 +138,11 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
                     hover
                   >
                     <TableCell scope="row">
-                      <Avatar alt={row.name} src={row.image} />
+                      <Avatar
+                        alt={row.name}
+                        src={row.image}
+                        sx={{ width: 40, height: 40 }}
+                      />
                     </TableCell>
                     <TableCell>{row.name}</TableCell>
                     <TableCell>{row.status}</TableCell>
