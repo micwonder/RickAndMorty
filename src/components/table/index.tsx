@@ -73,12 +73,6 @@ export default function EnhancedTable({ tableRows }: IEnhancedTableProps) {
     ),
   );
 
-  // React.useEffect(() => {
-  //   if (localStorage.getItem('rowPerPage') === null) {
-  //     localStorage.setItem('rowPerPage', '5');
-  //   }
-  // }, []);
-
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof Data,
